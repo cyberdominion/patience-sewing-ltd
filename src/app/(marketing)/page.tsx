@@ -297,7 +297,7 @@ export default async function HomePage() {
           <Reveal delay={100}>
             <p className="eyebrow">Bespoke service</p>
             <h2 className="mt-3 font-display text-4xl font-semibold text-royal-950">
-              Made to measure, from NGN 180,000
+              Made to measure, from NGN 10,000
             </h2>
             <div className="gold-rule mt-4" />
             <p className="mt-6 leading-relaxed text-royal-900/75">
