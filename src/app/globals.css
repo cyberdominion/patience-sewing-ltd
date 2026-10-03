@@ -1,0 +1,244 @@
+@import "tailwindcss";
+
+@theme {
+  /* ---- Patience Sewing brand palette: Royal Blue + Gold ---- */
+  --color-royal-50: #f1f5ff;
+  --color-royal-100: #e0e8ff;
+  --color-royal-200: #c6d4ff;
+  --color-royal-300: #a2b7ff;
+  --color-royal-400: #748fff;
+  --color-royal-500: #4a63f5;
+  --color-royal-600: #2b3ad6;
+  --color-royal-700: #1f2aa8;
+  --color-royal-800: #1a2484;
+  --color-royal-900: #0e1a6a;
+  --color-royal-950: #070f3c;
+
+  --color-gold-50: #fdf9ed;
+  --color-gold-100: #faf0cc;
+  --color-gold-200: #f4df95;
+  --color-gold-300: #edc85b;
+  --color-gold-400: #e8b63c;
+  --color-gold-500: #d49a24;
+  --color-gold-600: #b8781c;
+  --color-gold-700: #95571a;
+  --color-gold-800: #7b461b;
+  --color-gold-900: #663b1a;
+  --color-gold-950: #3c1d09;
+
+  --color-ink: #0b1020;
+  --color-parchment: #fbfaf7;
+
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), Georgia, "Times New Roman", serif;
+
+  --radius-card: 1rem;
+
+  --shadow-luxe: 0 1px 2px rgb(11 16 32 / 0.04), 0 12px 32px -12px rgb(11 16 32 / 0.16);
+  --shadow-gold: 0 8px 24px -10px rgb(212 154 36 / 0.55);
+}
+
+@layer base {
+  :root {
+    --background: var(--color-parchment);
+    --foreground: var(--color-ink);
+  }
+
+  * {
+    border-color: color-mix(in oklab, var(--color-royal-900) 12%, transparent);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+  }
+
+  ::selection {
+    background: var(--color-royal-900);
+    color: var(--color-gold-200);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-500);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .container-luxe {
+    width: 100%;
+    margin-inline: auto;
+    max-width: 88rem;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .container-luxe {
+      padding-inline: 2rem;
+    }
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 9999px;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    transition: all 180ms ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--color-royal-900);
+    color: white;
+    box-shadow: var(--shadow-luxe);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-royal-800);
+    transform: translateY(-1px);
+  }
+
+  .btn-gold {
+    background: linear-gradient(120deg, var(--color-gold-300), var(--color-gold-500));
+    color: var(--color-royal-950);
+    box-shadow: var(--shadow-gold);
+  }
+
+  .btn-gold:hover:not(:disabled) {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+  }
+
+  .btn-outline {
+    border: 1px solid color-mix(in oklab, var(--color-royal-900) 25%, transparent);
+    color: var(--color-royal-900);
+    background: transparent;
+  }
+
+  .btn-outline:hover:not(:disabled) {
+    background: var(--color-royal-50);
+  }
+
+  .btn-ghost {
+    color: var(--color-royal-800);
+    background: transparent;
+    padding-inline: 0.75rem;
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--color-royal-50);
+  }
+
+  .card {
+    background: white;
+    border: 1px solid color-mix(in oklab, var(--color-royal-900) 10%, transparent);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-luxe);
+  }
+
+  .label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-royal-700);
+    margin-bottom: 0.375rem;
+  }
+
+  .input {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in oklab, var(--color-royal-900) 18%, transparent);
+    background: white;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.9375rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  .input:focus {
+    outline: none;
+    border-color: var(--color-royal-600);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-royal-500) 18%, transparent);
+  }
+
+  .gold-rule {
+    height: 2px;
+    width: 4rem;
+    background: linear-gradient(90deg, var(--color-gold-400), transparent);
+  }
+
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--color-gold-600);
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 9999px;
+    padding: 0.125rem 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-rise {
+    animation: rise 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}

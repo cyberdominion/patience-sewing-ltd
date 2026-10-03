@@ -1,0 +1,43 @@
+{
+  "name": "Patience Sewing Ltd",
+  "short_name": "Patience Sewing",
+  "description": "Bespoke Nigerian fashion, cut and stitched to measure. Wholesale and retail prices for dresses, and a made-to-measure commission service.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fbfaf7",
+  "theme_color": "#0e1a6a",
+  "categories": ["shopping", "lifestyle"],
+  "lang": "en-NG",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Shop the collection",
+      "short_name": "Shop",
+      "url": "/shop"
+    },
+    {
+      "name": "Wholesale prices",
+      "short_name": "Wholesale",
+      "url": "/wholesale"
+    },
+    {
+      "name": "My orders",
+      "short_name": "Orders",
+      "url": "/account"
+    },
+    {
+      "name": "Commission bespoke",
+      "short_name": "Bespoke",
+      "url": "/bespoke"
+    }
+  ]
+}
