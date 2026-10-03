@@ -19,9 +19,9 @@ export const dynamic = "force-dynamic";
 
 export default async function ContactPage() {
   const settings = await prisma.siteSettings.findUnique({ where: { id: "singleton" } });
-  const whatsapp = settings?.whatsappNumber ?? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "2348000000000";
+  const whatsapp = settings?.whatsappNumber ?? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "2348105756444";
   const email = settings?.supportEmail ?? "hello@patiencesewing.com";
-  const phone = settings?.supportPhone ?? "+234 800 000 0000";
+  const phone = settings?.supportPhone ?? "+234 810 575 6444";
 
   return (
     <div className="container-luxe py-14">
@@ -113,7 +113,7 @@ export default async function ContactPage() {
           <div className="relative overflow-hidden rounded-card">
             <div className="relative aspect-16/10 w-full bg-royal-50">
               <Image
-                src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1200&q=80"
+                src="https://res.cloudinary.com/qezpmojd/image/upload/v1791037633/photo_2026-10-03_15-25-41.jpg"
                 alt="Fabric and scissors in the Patience Sewing workshop"
                 fill
                 sizes="(min-width: 1024px) 45vw, 100vw"
