@@ -29,7 +29,7 @@ export default function AboutPage() {
       <section className="relative overflow-hidden bg-royal-950">
         <div className="absolute inset-0">
           <Image
-            src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1800&q=80"
+            src="https://res.cloudinary.com/qezpmojd/image/upload/v1791037633/photo_2026-10-03_15-25-41.jpg"
             alt=""
             fill
             priority
@@ -43,7 +43,7 @@ export default function AboutPage() {
           <div className="max-w-2xl">
             <p className="eyebrow">{BRAND.city}, {BRAND.state}</p>
             <h1 className="mt-3 font-display text-5xl font-semibold leading-tight text-white text-balance md:text-6xl">
-              A workshop in Bayelsa that treats sewing as a craft, not a market
+              A sewing factory in Bayelsa that treats sewing as a craft, not a market
             </h1>
             <div className="gold-rule mt-5" />
             <p className="mt-6 text-lg leading-relaxed text-royal-100/85">
@@ -60,7 +60,7 @@ export default function AboutPage() {
           <div>
             <p className="eyebrow">Our story</p>
             <h2 className="mt-3 font-display text-4xl font-semibold text-royal-950">
-              Started because a deadline was missed, and a wedding was ruined by it
+              Started because a deadline was missed, and an occasion was ruined by it
             </h2>
             <div className="gold-rule mt-4" />
             <div className="mt-6 space-y-4 leading-relaxed text-royal-900/75">
@@ -87,7 +87,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-4">
               <Stat value={`${new Date().getFullYear() - BRAND.foundedYear}+`} label="Years sewing" />
-              <Stat value="2,400+" label="Garments delivered" />
+              <Stat value="200+" label="Garments delivered" />
             </div>
             <div className="space-y-4 pt-8">
               <Stat value="14 days" label="Typical lead time" />
