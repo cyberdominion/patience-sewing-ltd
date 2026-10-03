@@ -40,7 +40,7 @@ export default async function HomePage() {
     "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=1800&q=80";
 
   const whatsapp = normalisePhone(
-    settings?.whatsappNumber ?? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "2348000000000",
+    settings?.whatsappNumber ?? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "2348105756444",
   );
 
   return (

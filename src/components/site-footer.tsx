@@ -8,10 +8,10 @@ import { MapPin, Phone, Mail, ShieldCheck, Truck, Scissors, AtSign, Camera } fro
 export async function SiteFooter() {
   const settings = await prisma.siteSettings.findUnique({ where: { id: "singleton" } });
   const whatsapp = normalisePhone(
-    settings?.whatsappNumber ?? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "2348000000000",
+    settings?.whatsappNumber ?? process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "2348105756444",
   );
   const email = settings?.supportEmail ?? "hello@patiencesewing.com";
-  const phone = settings?.supportPhone ?? "+234 800 000 0000";
+  const phone = settings?.supportPhone ?? "+234 810 575 6444";
 
   return (
     <footer className="mt-24 bg-royal-950 text-royal-100">

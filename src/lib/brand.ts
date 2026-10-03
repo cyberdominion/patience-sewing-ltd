@@ -7,7 +7,7 @@ export const BRAND = {
   country: "Nigeria",
   rcNumber: "RC 1846203",
   tagline: "Bespoke Nigerian fashion, cut and stitched to measure",
-  foundedYear: 2014,
+  foundedYear: 2024,
 } as const;
 
 export const ROYAL_BLUE = "#0e1a6a";
