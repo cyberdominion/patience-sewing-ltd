@@ -65,7 +65,7 @@ export default async function HomePage() {
             <div className="max-w-2xl">
               <p className="eyebrow animate-rise">Bayelsa &middot; Nigeria &middot; Since {BRAND.foundedYear}</p>
               <h1 className="animate-rise mt-4 font-display text-5xl font-semibold leading-[1.05] text-white text-balance md:text-7xl">
-                Dresses cut and stitched for the woman who is remembered
+                Patience Sewing is a sewing factory in Nigeria that produces garments at factory rate for retailers and wholesalers.
               </h1>
               <p className="mt-2 h-px w-24 bg-gradient-to-r from-gold-400 to-transparent" />
               <p className="animate-rise mt-6 max-w-xl text-base leading-relaxed text-royal-100/90 md:text-lg">
@@ -278,7 +278,7 @@ export default async function HomePage() {
             <div className="relative overflow-hidden rounded-card">
               <div className="relative aspect-4/5 w-full">
                 <Image
-                  src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=1200&q=80"
+                  src="https://res.cloudinary.com/qezpmojd/image/upload/v1791037633/photo_2026-10-03_15-25-41.jpg"
                   alt="A tailor measuring fabric in the Patience Sewing workshop"
                   fill
                   sizes="(min-width: 1024px) 45vw, 100vw"
