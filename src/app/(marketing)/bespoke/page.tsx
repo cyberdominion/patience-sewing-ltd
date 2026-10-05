@@ -29,7 +29,7 @@ export default async function BespokePage() {
 
   return (
     <>
-      <section className="bg-royal-950 py-20">
+      <section className="bg-royal-950 py-12 md:py-20">
         <div className="container-luxe">
           <div className="max-w-2xl">
             <p className="eyebrow">Bespoke service</p>
@@ -56,7 +56,7 @@ export default async function BespokePage() {
         </div>
       </section>
 
-      <section className="container-luxe py-20">
+      <section className="container-luxe py-12 md:py-20">
         <div className="grid gap-12 lg:grid-cols-2">
           <div>
             <p className="eyebrow">The process</p>
@@ -113,7 +113,7 @@ export default async function BespokePage() {
                   { label: "Full gown with hand-beaded work", price: 450_000 },
                   { label: "Traditional engagement attire with gele", price: 320_000 },
                 ].map((row) => (
-                  <li key={row.label} className="flex items-baseline justify-between gap-4 border-b border-royal-900/8 pb-3 last:border-0">
+                  <li key={row.label} className="flex flex-col gap-1 border-b border-royal-900/8 pb-3 last:border-0 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
                     <span className="text-royal-900/75">{row.label}</span>
                     <span className="shrink-0 font-semibold text-royal-950">
                       {fmt(row.price * 100)}
@@ -178,7 +178,7 @@ export default async function BespokePage() {
         </div>
       </section>
 
-      <section className="bg-white py-20">
+      <section className="bg-white py-12 md:py-20">
         <div className="container-luxe">
           <div className="text-center">
             <p className="eyebrow">Starting points</p>
@@ -197,7 +197,7 @@ export default async function BespokePage() {
               <Link
                 key={item.slug}
                 href={`/shop/${item.slug}`}
-                className="card flex items-center gap-3 px-5 py-3 transition-colors hover:bg-royal-50"
+                className="card flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-royal-50"
               >
                 <span className="text-sm font-medium text-royal-950">{item.name}</span>
                 <span className="text-xs text-royal-900/50">{formatNaira(item.retailPrice)}</span>
