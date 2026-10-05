@@ -4,7 +4,11 @@ import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "./prisma";
 
 export const SESSION_COOKIE = "psl_session";
+export const LAST_ACTIVE_COOKIE = "psl_last_active";
+
 const SESSION_DAYS = 30;
+const ADMIN_SESSION_HOURS = 8;
+const INACTIVITY_HOURS = 24;
 
 export type Role = "ADMIN" | "RETAILER" | "CUSTOMER";
 
@@ -19,6 +23,15 @@ export type SessionUser = {
   businessName: string | null;
   discountPercent: number;
 };
+
+function sessionMaxAgeMs(role: Role): number {
+  if (role === "ADMIN") return ADMIN_SESSION_HOURS * 60 * 60 * 1000;
+  return SESSION_DAYS * 24 * 60 * 60 * 1000;
+}
+
+function inactivityMaxAgeMs(): number {
+  return INACTIVITY_HOURS * 60 * 60 * 1000;
+}
 
 /** Placeholders from .env.example that must never guard real sessions. */
 const WEAK_SECRETS = new Set([
@@ -43,12 +56,15 @@ function secretKey(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-export async function createSession(userId: string): Promise<void> {
-  const token = await new SignJWT({ sub: userId })
+export async function createSession(userId: string, role: Role): Promise<void> {
+  const token = await new SignJWT({ sub: userId, role })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${SESSION_DAYS}d`)
     .sign(secretKey());
+
+  const now = Date.now();
+  const maxAge = sessionMaxAgeMs(role);
 
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
@@ -56,13 +72,27 @@ export async function createSession(userId: string): Promise<void> {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: SESSION_DAYS * 24 * 60 * 60,
+    maxAge: Math.floor(maxAge / 1000),
+  });
+  store.set(LAST_ACTIVE_COOKIE, String(now), {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: Math.floor(inactivityMaxAgeMs() / 1000),
   });
 }
 
 export async function destroySession(): Promise<void> {
   const store = await cookies();
   store.delete(SESSION_COOKIE);
+  store.delete(LAST_ACTIVE_COOKIE);
+}
+
+async function clearSession(): Promise<void> {
+  const store = await cookies();
+  store.delete(SESSION_COOKIE);
+  store.delete(LAST_ACTIVE_COOKIE);
 }
 
 /** Reads the signed session cookie and loads the user. Returns null when signed out. */
@@ -74,7 +104,29 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   try {
     const { payload } = await jwtVerify(token, secretKey());
     const userId = payload.sub;
+    const role = (payload.role as Role) || "CUSTOMER";
     if (!userId) return null;
+
+    const now = Date.now();
+    const lastActive = store.get(LAST_ACTIVE_COOKIE)?.value;
+    if (lastActive) {
+      const lastActiveTime = Number(lastActive);
+      if (!Number.isFinite(lastActiveTime)) {
+        await clearSession();
+        return null;
+      }
+      if (now - lastActiveTime > inactivityMaxAgeMs()) {
+        await clearSession();
+        return null;
+      }
+      if (now - lastActiveTime > sessionMaxAgeMs(role)) {
+        await clearSession();
+        return null;
+      }
+    } else {
+      await clearSession();
+      return null;
+    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -89,10 +141,13 @@ export async function getSessionUser(): Promise<SessionUser | null> {
         },
       },
     });
-    if (!user) return null;
+    if (!user) {
+      await clearSession();
+      return null;
+    }
 
     const retailerStatus = user.retailerProfile?.status ?? null;
-    return {
+    const sessionUser: SessionUser = {
       id: user.id,
       email: user.email,
       fullName: user.fullName,
@@ -106,6 +161,16 @@ export async function getSessionUser(): Promise<SessionUser | null> {
           ? user.retailerProfile!.discountPercent
           : 0,
     };
+
+    store.set(LAST_ACTIVE_COOKIE, String(Date.now()), {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: Math.floor(inactivityMaxAgeMs() / 1000),
+    });
+
+    return sessionUser;
   } catch {
     return null;
   }

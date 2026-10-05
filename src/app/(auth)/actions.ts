@@ -38,7 +38,7 @@ export async function loginAction(
     return failure("Those details do not match our records.");
   }
 
-  await createSession(user.id);
+  await createSession(user.id, user.role);
   const next = String(formData.get("next") ?? "");
   redirect(safeRedirect(next, user.role === "ADMIN" ? "/admin" : "/account"));
 }
@@ -80,7 +80,7 @@ export async function registerAction(
     },
   });
 
-  await createSession(user.id);
+  await createSession(user.id, user.role);
   redirect("/account?welcome=1");
 }
 
