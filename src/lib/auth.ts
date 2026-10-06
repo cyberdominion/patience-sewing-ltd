@@ -189,15 +189,37 @@ export async function debugSessionUser(): Promise<string | null> {
   if (!token) return "No session cookie found";
 
   try {
-    await jwtVerify(token, secretKey());
+    const { payload } = await jwtVerify(token, secretKey());
+    const userId = payload.sub;
+    const role = (payload.role as Role) || "CUSTOMER";
+    if (!userId) return "JWT valid but no userId in payload";
+
+    const now = Date.now();
+    const lastActive = store.get(LAST_ACTIVE_COOKIE)?.value;
+    if (lastActive) {
+      const lastActiveTime = Number(lastActive);
+      if (!Number.isFinite(lastActiveTime)) return "Invalid last_active timestamp";
+      if (now - lastActiveTime > inactivityMaxAgeMs()) return "Inactivity timeout exceeded";
+      if (now - lastActiveTime > sessionMaxAgeMs(role)) return "Session max age exceeded";
+    } else {
+      const iat = payload.iat;
+      if (!iat || typeof iat !== "number") return "No last_active cookie and no JWT iat";
+      const lastActiveTime = iat * 1000;
+      if (now - lastActiveTime > inactivityMaxAgeMs()) return "Inactivity timeout exceeded (from iat)";
+      if (now - lastActiveTime > sessionMaxAgeMs(role)) return "Session max age exceeded (from iat)";
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, fullName: true, phone: true, role: true },
+    });
+    if (!user) return "User not found in database";
+    if (user.role !== "ADMIN") return `User role is ${user.role}, not ADMIN`;
+
+    return null;
   } catch (error) {
     return `JWT verification failed: ${error instanceof Error ? error.message : "Unknown error"}`;
   }
-
-  const user = await getSessionUser();
-  if (!user) return "Session rejected by getSessionUser()";
-
-  return null;
 }
 
 export async function requireUser(): Promise<SessionUser> {
