@@ -40,7 +40,8 @@ export async function loginAction(
 
   await createSession(user.id, user.role);
   const next = String(formData.get("next") ?? "");
-  redirect(safeRedirect(next, user.role === "ADMIN" ? "/admin" : "/account"));
+  const target = safeRedirect(next, user.role === "ADMIN" ? "/admin" : "/account");
+  return success(`Debug: session created. Would redirect to: ${target}`);
 }
 
 export async function registerAction(
