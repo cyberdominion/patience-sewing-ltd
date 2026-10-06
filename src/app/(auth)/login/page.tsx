@@ -15,15 +15,25 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ next?: string }>;
 }) {
-  const user = await getSessionUser();
-  const { next } = await searchParams;
+  let sessionError: string | null = null;
+  try {
+    const user = await getSessionUser();
+    const { next } = await searchParams;
 
-  if (user) {
-    redirect(user.role === "ADMIN" ? "/admin" : "/account");
+    if (user) {
+      redirect(user.role === "ADMIN" ? "/admin" : "/account");
+    }
+  } catch (error) {
+    sessionError = error instanceof Error ? error.message : "Session check failed";
   }
 
   return (
     <div className="container-luxe py-16">
+      {sessionError && (
+        <div className="mx-auto mb-6 max-w-5xl rounded-lg bg-red-50 p-4 text-sm text-red-700">
+          Session debug: {sessionError}
+        </div>
+      )}
       <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2 lg:items-start">
         <div className="lg:sticky lg:top-28">
           <p className="eyebrow">Welcome back</p>

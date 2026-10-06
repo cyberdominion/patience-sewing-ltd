@@ -178,8 +178,9 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     });
 
     return sessionUser;
-  } catch {
-    return null;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown session error";
+    throw new Error(`Session validation failed: ${message}`);
   }
 }
 
