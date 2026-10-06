@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getSessionUser, debugSessionUser, SESSION_COOKIE, LAST_ACTIVE_COOKIE } from "@/lib/auth";
-import { cookies } from "next/headers";
+import { getSessionUser, debugSessionUser } from "@/lib/auth";
 import { LoginForm, RegisterForm } from "@/components/auth-forms";
 import { Crown, Truck, ShieldCheck, Store } from "lucide-react";
 
@@ -28,10 +27,7 @@ export default async function LoginPage({
     }
 
     if (next === "/admin") {
-      const store = await cookies();
-      const hasSession = !!store.get(SESSION_COOKIE)?.value;
-      const hasLastActive = !!store.get(LAST_ACTIVE_COOKIE)?.value;
-      sessionDebug = `Cookie sent: session=${hasSession}, last_active=${hasLastActive}. getSessionUser returned null.`;
+      sessionDebug = await debugSessionUser();
     }
   } catch (error) {
     sessionDebug = error instanceof Error ? error.message : "Session check failed";

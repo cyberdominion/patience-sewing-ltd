@@ -188,40 +188,47 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 export async function debugSessionUser(): Promise<string | null> {
   const store = await cookies();
   const token = store.get(SESSION_COOKIE)?.value;
-  if (!token) return "No session cookie found";
+  if (!token) return "No session cookie";
+
+  let payload;
+  try {
+    const result = await jwtVerify(token, secretKey());
+    payload = result.payload;
+  } catch (error) {
+    return `JWT verification failed: ${error instanceof Error ? error.message : "Unknown error"}`;
+  }
+
+  const userId = payload.sub;
+  const role = (payload.role as Role) || "CUSTOMER";
+  if (!userId) return "JWT has no userId";
+
+  const now = Date.now();
+  const lastActive = store.get(LAST_ACTIVE_COOKIE)?.value;
+  if (lastActive) {
+    const lastActiveTime = Number(lastActive);
+    if (!Number.isFinite(lastActiveTime)) return "last_active is not a valid number";
+    if (now - lastActiveTime > inactivityMaxAgeMs()) return "Inactivity timeout exceeded";
+    if (now - lastActiveTime > sessionMaxAgeMs(role)) return "Session max age exceeded";
+  } else {
+    const iat = payload.iat;
+    if (!iat || typeof iat !== "number") return "No last_active and no JWT iat";
+    const lastActiveTime = iat * 1000;
+    if (now - lastActiveTime > inactivityMaxAgeMs()) return "Inactivity timeout exceeded (iat)";
+    if (now - lastActiveTime > sessionMaxAgeMs(role)) return "Session max age exceeded (iat)";
+  }
 
   try {
-    const { payload } = await jwtVerify(token, secretKey());
-    const userId = payload.sub;
-    const role = (payload.role as Role) || "CUSTOMER";
-    if (!userId) return "JWT valid but no userId in payload";
-
-    const now = Date.now();
-    const lastActive = store.get(LAST_ACTIVE_COOKIE)?.value;
-    if (lastActive) {
-      const lastActiveTime = Number(lastActive);
-      if (!Number.isFinite(lastActiveTime)) return "Invalid last_active timestamp";
-      if (now - lastActiveTime > inactivityMaxAgeMs()) return "Inactivity timeout exceeded";
-      if (now - lastActiveTime > sessionMaxAgeMs(role)) return "Session max age exceeded";
-    } else {
-      const iat = payload.iat;
-      if (!iat || typeof iat !== "number") return "No last_active cookie and no JWT iat";
-      const lastActiveTime = iat * 1000;
-      if (now - lastActiveTime > inactivityMaxAgeMs()) return "Inactivity timeout exceeded (from iat)";
-      if (now - lastActiveTime > sessionMaxAgeMs(role)) return "Session max age exceeded (from iat)";
-    }
-
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, email: true, fullName: true, phone: true, role: true },
     });
-    if (!user) return "User not found in database";
+    if (!user) return "User not found in DB";
     if (user.role !== "ADMIN") return `User role is ${user.role}, not ADMIN`;
-
-    return null;
   } catch (error) {
-    return `JWT verification failed: ${error instanceof Error ? error.message : "Unknown error"}`;
+    return `DB query failed: ${error instanceof Error ? error.message : "Unknown error"}`;
   }
+
+  return null;
 }
 
 export async function requireUser(): Promise<SessionUser> {

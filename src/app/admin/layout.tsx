@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getSessionUser, type SessionUser } from "@/lib/auth";
+import { getSessionUser, debugSessionUser, type SessionUser } from "@/lib/auth";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { prisma } from "@/lib/prisma";
 
@@ -20,7 +20,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     sessionError = error instanceof Error ? error.message : "Session check failed";
   }
 
-  if (!user) redirect("/login?next=/admin");
+  if (!user) {
+    const debug = await debugSessionUser();
+    if (debug) sessionError = debug;
+    redirect("/login?next=/admin");
+  }
   if (user.role !== "ADMIN") redirect("/account");
 
   const [pendingRetailers, dueFollowUps, lowStock, openLeads] = await Promise.all([
