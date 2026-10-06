@@ -16,8 +16,8 @@ export function LoginForm({ next }: { next: string }) {
 
       {next && <input type="hidden" name="next" value={next} />}
 
-      {state.message && !state.ok && (
-        <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+      {state.message && (
+        <p role="alert" className={`rounded-lg p-3 text-sm ${state.ok ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>
           {state.message}
         </p>
       )}
