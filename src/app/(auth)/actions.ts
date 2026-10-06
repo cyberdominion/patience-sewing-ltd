@@ -14,37 +14,32 @@ export async function loginAction(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  try {
-    const parsed = loginSchema.safeParse({
-      email: formData.get("email"),
-      password: formData.get("password"),
+  const parsed = loginSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+
+  if (!parsed.success) {
+    return failure("Check your email and password.", {
+      ...Object.fromEntries(
+        parsed.error.issues.map((i) => [String(i.path[0] ?? "form"), i.message]),
+      ),
     });
-
-    if (!parsed.success) {
-      return failure("Check your email and password.", {
-        ...Object.fromEntries(
-          parsed.error.issues.map((i) => [String(i.path[0] ?? "form"), i.message]),
-        ),
-      });
-    }
-
-    const user = await prisma.user.findUnique({ where: { email: parsed.data.email.toLowerCase() } });
-    if (!user) {
-      return failure("Those details do not match our records.");
-    }
-
-    const valid = await verifyPassword(parsed.data.password, user.passwordHash);
-    if (!valid) {
-      return failure("Those details do not match our records.");
-    }
-
-    await createSession(user.id, user.role);
-    const next = String(formData.get("next") ?? "");
-    const target = safeRedirect(next, user.role === "ADMIN" ? "/admin" : "/account");
-    return success(`Debug: session created. Would redirect to: ${target}`);
-  } catch (error) {
-    return failure(`Login error: ${error instanceof Error ? error.message : "Unknown error"}`);
   }
+
+  const user = await prisma.user.findUnique({ where: { email: parsed.data.email.toLowerCase() } });
+  if (!user) {
+    return failure("Those details do not match our records.");
+  }
+
+  const valid = await verifyPassword(parsed.data.password, user.passwordHash);
+  if (!valid) {
+    return failure("Those details do not match our records.");
+  }
+
+  await createSession(user.id, user.role);
+  const next = String(formData.get("next") ?? "");
+  redirect(safeRedirect(next, user.role === "ADMIN" ? "/admin" : "/account"));
 }
 
 export async function registerAction(

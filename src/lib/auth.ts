@@ -4,11 +4,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "./prisma";
 
 export const SESSION_COOKIE = "psl_session";
-export const LAST_ACTIVE_COOKIE = "psl_last_active";
-
 const SESSION_DAYS = 30;
-const ADMIN_SESSION_HOURS = 8;
-const INACTIVITY_HOURS = 24;
 
 export type Role = "ADMIN" | "RETAILER" | "CUSTOMER";
 
@@ -23,15 +19,6 @@ export type SessionUser = {
   businessName: string | null;
   discountPercent: number;
 };
-
-function sessionMaxAgeMs(role: Role): number {
-  if (role === "ADMIN") return ADMIN_SESSION_HOURS * 60 * 60 * 1000;
-  return SESSION_DAYS * 24 * 60 * 60 * 1000;
-}
-
-function inactivityMaxAgeMs(): number {
-  return INACTIVITY_HOURS * 60 * 60 * 1000;
-}
 
 /** Placeholders from .env.example that must never guard real sessions. */
 const WEAK_SECRETS = new Set([
@@ -63,36 +50,19 @@ export async function createSession(userId: string, role: Role): Promise<void> {
     .setExpirationTime(`${SESSION_DAYS}d`)
     .sign(secretKey());
 
-  const now = Date.now();
-  const maxAge = sessionMaxAgeMs(role);
-
   const store = await cookies();
   store.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     path: "/",
-    maxAge: Math.floor(maxAge / 1000),
-  });
-  store.set(LAST_ACTIVE_COOKIE, String(now), {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: Math.floor(inactivityMaxAgeMs() / 1000),
+    maxAge: SESSION_DAYS * 24 * 60 * 60,
   });
 }
 
 export async function destroySession(): Promise<void> {
   const store = await cookies();
   store.delete(SESSION_COOKIE);
-  store.delete(LAST_ACTIVE_COOKIE);
-}
-
-async function clearSession(): Promise<void> {
-  const store = await cookies();
-  store.delete(SESSION_COOKIE);
-  store.delete(LAST_ACTIVE_COOKIE);
 }
 
 /** Reads the signed session cookie and loads the user. Returns null when signed out. */
@@ -104,36 +74,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   try {
     const { payload } = await jwtVerify(token, secretKey());
     const userId = payload.sub;
-    const role = (payload.role as Role) || "CUSTOMER";
     if (!userId) return null;
-
-    const now = Date.now();
-    const lastActive = store.get(LAST_ACTIVE_COOKIE)?.value;
-
-    let lastActiveTime: number;
-    if (lastActive) {
-      lastActiveTime = Number(lastActive);
-      if (!Number.isFinite(lastActiveTime)) {
-        await clearSession();
-        return null;
-      }
-    } else {
-      const iat = payload.iat;
-      if (!iat || typeof iat !== "number") {
-        await clearSession();
-        return null;
-      }
-      lastActiveTime = iat * 1000;
-    }
-
-    if (now - lastActiveTime > inactivityMaxAgeMs()) {
-      await clearSession();
-      return null;
-    }
-    if (now - lastActiveTime > sessionMaxAgeMs(role)) {
-      await clearSession();
-      return null;
-    }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -148,13 +89,10 @@ export async function getSessionUser(): Promise<SessionUser | null> {
         },
       },
     });
-    if (!user) {
-      await clearSession();
-      return null;
-    }
+    if (!user) return null;
 
     const retailerStatus = user.retailerProfile?.status ?? null;
-    const sessionUser: SessionUser = {
+    return {
       id: user.id,
       email: user.email,
       fullName: user.fullName,
@@ -168,67 +106,9 @@ export async function getSessionUser(): Promise<SessionUser | null> {
           ? user.retailerProfile!.discountPercent
           : 0,
     };
-
-    store.set(LAST_ACTIVE_COOKIE, String(Date.now()), {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: Math.floor(inactivityMaxAgeMs() / 1000),
-    });
-
-    return sessionUser;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown session error";
-    console.error("[auth] getSessionUser error:", message, "token prefix:", (await cookies()).get(SESSION_COOKIE)?.value?.slice(0, 20));
+  } catch {
     return null;
   }
-}
-
-export async function debugSessionUser(): Promise<string | null> {
-  const store = await cookies();
-  const token = store.get(SESSION_COOKIE)?.value;
-  if (!token) return "No session cookie";
-
-  let payload;
-  try {
-    const result = await jwtVerify(token, secretKey());
-    payload = result.payload;
-  } catch (error) {
-    return `JWT verification failed: ${error instanceof Error ? error.message : "Unknown error"}`;
-  }
-
-  const userId = payload.sub;
-  const role = (payload.role as Role) || "CUSTOMER";
-  if (!userId) return "JWT has no userId";
-
-  const now = Date.now();
-  const lastActive = store.get(LAST_ACTIVE_COOKIE)?.value;
-  if (lastActive) {
-    const lastActiveTime = Number(lastActive);
-    if (!Number.isFinite(lastActiveTime)) return "last_active is not a valid number";
-    if (now - lastActiveTime > inactivityMaxAgeMs()) return "Inactivity timeout exceeded";
-    if (now - lastActiveTime > sessionMaxAgeMs(role)) return "Session max age exceeded";
-  } else {
-    const iat = payload.iat;
-    if (!iat || typeof iat !== "number") return "No last_active and no JWT iat";
-    const lastActiveTime = iat * 1000;
-    if (now - lastActiveTime > inactivityMaxAgeMs()) return "Inactivity timeout exceeded (iat)";
-    if (now - lastActiveTime > sessionMaxAgeMs(role)) return "Session max age exceeded (iat)";
-  }
-
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, email: true, fullName: true, phone: true, role: true },
-    });
-    if (!user) return "User not found in DB";
-    if (user.role !== "ADMIN") return `User role is ${user.role}, not ADMIN`;
-  } catch (error) {
-    return `DB query failed: ${error instanceof Error ? error.message : "Unknown error"}`;
-  }
-
-  return null;
 }
 
 export async function requireUser(): Promise<SessionUser> {

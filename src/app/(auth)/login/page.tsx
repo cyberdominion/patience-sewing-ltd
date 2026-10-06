@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getSessionUser, debugSessionUser } from "@/lib/auth";
+import { getSessionUser } from "@/lib/auth";
 import { LoginForm, RegisterForm } from "@/components/auth-forms";
 import { Crown, Truck, ShieldCheck, Store } from "lucide-react";
 
@@ -15,31 +15,15 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{ next?: string }>;
 }) {
-  let sessionDebug: string | null = null;
-  let next = "";
-  try {
-    const user = await getSessionUser();
-    const params = await searchParams;
-    next = params.next ?? "";
+  const user = await getSessionUser();
+  const { next } = await searchParams;
 
-    if (user) {
-      redirect(user.role === "ADMIN" ? "/admin" : "/account");
-    }
-
-    if (next === "/admin") {
-      sessionDebug = await debugSessionUser();
-    }
-  } catch (error) {
-    sessionDebug = error instanceof Error ? error.message : "Session check failed";
+  if (user) {
+    redirect(user.role === "ADMIN" ? "/admin" : "/account");
   }
 
   return (
     <div className="container-luxe py-16">
-      {sessionDebug && (
-        <div className="mx-auto mb-6 max-w-5xl rounded-lg bg-red-50 p-4 text-sm text-red-700">
-          Session debug: {sessionDebug}
-        </div>
-      )}
       <div className="mx-auto grid max-w-5xl gap-12 lg:grid-cols-2 lg:items-start">
         <div className="lg:sticky lg:top-28">
           <p className="eyebrow">Welcome back</p>
