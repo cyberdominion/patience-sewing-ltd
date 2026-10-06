@@ -109,21 +109,28 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 
     const now = Date.now();
     const lastActive = store.get(LAST_ACTIVE_COOKIE)?.value;
+
+    let lastActiveTime: number;
     if (lastActive) {
-      const lastActiveTime = Number(lastActive);
+      lastActiveTime = Number(lastActive);
       if (!Number.isFinite(lastActiveTime)) {
         await clearSession();
         return null;
       }
-      if (now - lastActiveTime > inactivityMaxAgeMs()) {
-        await clearSession();
-        return null;
-      }
-      if (now - lastActiveTime > sessionMaxAgeMs(role)) {
-        await clearSession();
-        return null;
-      }
     } else {
+      const iat = payload.iat;
+      if (!iat || typeof iat !== "number") {
+        await clearSession();
+        return null;
+      }
+      lastActiveTime = iat * 1000;
+    }
+
+    if (now - lastActiveTime > inactivityMaxAgeMs()) {
+      await clearSession();
+      return null;
+    }
+    if (now - lastActiveTime > sessionMaxAgeMs(role)) {
       await clearSession();
       return null;
     }
