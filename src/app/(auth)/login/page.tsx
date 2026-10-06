@@ -16,9 +16,11 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string }>;
 }) {
   let sessionError: string | null = null;
+  let next = "";
   try {
     const user = await getSessionUser();
-    const { next } = await searchParams;
+    const params = await searchParams;
+    next = params.next ?? "";
 
     if (user) {
       redirect(user.role === "ADMIN" ? "/admin" : "/account");

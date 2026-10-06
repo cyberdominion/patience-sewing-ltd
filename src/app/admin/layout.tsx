@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getSessionUser } from "@/lib/auth";
+import { getSessionUser, type SessionUser } from "@/lib/auth";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { prisma } from "@/lib/prisma";
 
