@@ -178,10 +178,26 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     });
 
     return sessionUser;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown session error";
-    throw new Error(`Session validation failed: ${message}`);
+  } catch {
+    return null;
   }
+}
+
+export async function debugSessionUser(): Promise<string | null> {
+  const store = await cookies();
+  const token = store.get(SESSION_COOKIE)?.value;
+  if (!token) return "No session cookie found";
+
+  try {
+    await jwtVerify(token, secretKey());
+  } catch (error) {
+    return `JWT verification failed: ${error instanceof Error ? error.message : "Unknown error"}`;
+  }
+
+  const user = await getSessionUser();
+  if (!user) return "Session rejected by getSessionUser()";
+
+  return null;
 }
 
 export async function requireUser(): Promise<SessionUser> {

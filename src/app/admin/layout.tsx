@@ -20,8 +20,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     sessionError = error instanceof Error ? error.message : "Session check failed";
   }
 
-  if (!user && !sessionError) redirect("/login?next=/admin");
-  if (user && user.role !== "ADMIN") redirect("/account");
+  if (!user) redirect("/login?next=/admin");
+  if (user.role !== "ADMIN") redirect("/account");
 
   const [pendingRetailers, dueFollowUps, lowStock, openLeads] = await Promise.all([
     prisma.retailerApplication.count({ where: { status: "PENDING" } }),
