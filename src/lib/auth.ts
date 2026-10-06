@@ -178,7 +178,9 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     });
 
     return sessionUser;
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown session error";
+    console.error("[auth] getSessionUser error:", message, "token prefix:", (await cookies()).get(SESSION_COOKIE)?.value?.slice(0, 20));
     return null;
   }
 }
